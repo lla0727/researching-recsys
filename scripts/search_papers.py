@@ -22,6 +22,7 @@ import urllib.parse
 import urllib.error
 import ssl
 import sys
+import os
 
 # Try to import optional dependencies
 try:
@@ -549,6 +550,81 @@ class MultiSourceSearcher:
                 if paper.code_url:
                     f.write(f"- **Code**: {paper.code_url}\n")
                 f.write("\n")
+
+
+def download_and_extract_pdf(paper_url: str, output_txt: str = None) -> str:
+    """
+    Download arXiv PDF and extract text content.
+
+    Args:
+        paper_url: Full URL to the paper (e.g., 'http://arxiv.org/abs/2509.17361v1')
+        output_txt: Optional path to save extracted text
+
+    Returns:
+        Extracted text content from the PDF
+    """
+    # Extract arXiv ID from URL
+    import re
+    arxiv_id_match = re.search(r'arxiv\.org/(?:abs|pdf)/(\d+\.\d+)', paper_url)
+    if not arxiv_id_match:
+        print(f"Could not extract arXiv ID from: {paper_url}", file=sys.stderr)
+        return ""
+
+    arxiv_id = arxiv_id_match.group(1)
+
+    # Try to import pypdf, install if needed
+    try:
+        from pypdf import PdfReader
+    except ImportError:
+        print("Installing pypdf...", file=sys.stderr)
+        os.system("pip install pypdf -q")
+        from pypdf import PdfReader
+
+    pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+    pdf_path = f"/tmp/{arxiv_id}.pdf"
+    txt_path = output_txt or f"/tmp/{arxiv_id}.txt"
+
+    # Download PDF
+    print(f"Downloading PDF: {pdf_url}", file=sys.stderr)
+    try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        req = urllib.request.Request(pdf_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=120, context=ctx) as response:
+            with open(pdf_path, 'wb') as f:
+                f.write(response.read())
+        print(f"PDF downloaded: {pdf_path}", file=sys.stderr)
+    except Exception as e:
+        print(f"Failed to download PDF: {e}", file=sys.stderr)
+        return ""
+
+    # Extract text
+    try:
+        reader = PdfReader(pdf_path)
+        print(f"Extracting text from {len(reader.pages)} pages...", file=sys.stderr)
+
+        text_content = []
+        for i, page in enumerate(reader.pages):
+            text = page.extract_text()
+            if text:
+                text_content.append(f"--- Page {i+1} ---\n{text}")
+
+        full_text = "\n\n".join(text_content)
+
+        # Save to file
+        with open(txt_path, 'w', encoding='utf-8', errors='ignore') as f:
+            f.write(full_text)
+        print(f"Text extracted: {txt_path} ({len(full_text)} chars)", file=sys.stderr)
+
+        return full_text
+    except Exception as e:
+        print(f"Failed to extract text: {e}", file=sys.stderr)
+        return ""
 
 
 def main():

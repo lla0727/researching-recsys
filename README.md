@@ -2,13 +2,12 @@
 
 搜推广（搜索、推荐、广告）领域科研论文搜索与分析 Skill for Claude Code
 
-## 功能特性
+## 核心特性
 
 - **多源并行搜索**: 同时检索 arXiv、Semantic Scholar、Papers with Code、DBLP、Google Scholar
-- **实时在线检索**: 每次搜索调用真实 API，不使用本地/训练数据知识
-- **智能去重排序**: 基于来源优先级、年份、引用数自动排序
+- **全文阅读**: 搜索后自动下载并解析论文 PDF，提取完整内容
+- **模型复现**: 基于论文全文生成可运行代码
 - **论文问答**: 可针对检索到的论文提问（原理、结构、计算、代码等）
-- **模型复现信息**: 提供核心架构、维度变化、参考代码
 
 ## 安装
 
@@ -16,10 +15,10 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/researching-recsys-papers.git
+git clone https://github.com/lla0727/researching-recsys.git
 
 # 复制到 Claude Code skills 目录
-cp -r researching-recsys-papers ~/.claude/skills/
+cp -r researching-recsys ~/.claude/skills/
 ```
 
 ### 方式二：通过 GitHub 导入
@@ -30,10 +29,10 @@ cp -r researching-recsys-papers ~/.claude/skills/
 
 - Python 3.8+
 - 标准库（urllib, ssl, json, dataclasses）
-- 可选：`requests` 库（用于更好的 HTTPS 支持）
+- `pypdf` 库（用于提取 PDF 内容）
 
 ```bash
-pip install requests  # 可选，但推荐安装
+pip install pypdf  # 自动安装（脚本会在需要时提示安装）
 ```
 
 ## 使用方法
@@ -55,23 +54,60 @@ pip install requests  # 可选，但推荐安装
 python scripts/search_papers.py "序列推荐" --start-year 2024 --end-year 2026 --max-per-source 10
 ```
 
+### 下载论文全文
+
+```bash
+# 方式1：使用脚本函数
+python -c "
+from scripts.search_papers import download_and_extract_pdf
+text = download_and_extract_pdf('http://arxiv.org/abs/2509.17361v1')
+print(text[:2000])
+"
+
+# 方式2：直接用 curl
+curl -s -L "https://arxiv.org/pdf/2509.17361.pdf" -o /tmp/paper.pdf
+```
+
 ### Google Scholar 搜索（需要 API Key）
 
 ```bash
 python scripts/search_papers.py "推荐系统" --serper-key YOUR_SERPER_API_KEY
 ```
 
+## 工作流程
+
+```
+用户描述问题
+     ↓
+多源并行论文检索（arXiv, Semantic Scholar, Papers with Code, DBLP）
+     ↓
+下载论文 PDF（自动）
+     ↓
+提取全文内容（pypdf 解析）
+     ↓
+基于全文生成：
+  - 论文分析报告
+  - 核心架构图
+  - 关键公式
+  - 可运行代码
+     ↓
+用户可追问论文细节（基于全文内容回答）
+```
+
 ## 文件结构
 
 ```
-researching-recsys-papers/
-├── SKILL.md                              # Skill 定义文件
+researching-recsys/
+├── SKILL.md                              # Skill 定义文件（包含完整工作流）
 ├── README.md                             # 本文件
 ├── scripts/
-│   └── search_papers.py                  # 多源论文搜索脚本
-└── references/
-    ├── paper-reading-guide.md            # 论文阅读指南
-    └── dimension-calculator.md          # 模型维度计算参考
+│   └── search_papers.py                  # 多源论文搜索 + PDF 下载脚本
+├── references/
+│   ├── paper-reading-guide.md            # 论文阅读指南
+│   └── dimension-calculator.md          # 模型维度计算参考
+└── demo/
+    ├── demo-report.md                    # 示例分析报告
+    └── sequda_rec.py                     # SeqUDA-Rec 复现代码
 ```
 
 ## 搜索数据源
@@ -88,30 +124,19 @@ researching-recsys-papers/
 
 搜索成功后返回：
 1. **场景理解** - 分析你的研究问题
-2. **最新论文列表** - 附论文链接和来源标注
-3. **改进方向建议** - 可行动的优化方向
-4. **模型复现** - 核心架构和代码
+2. **论文列表** - 附论文链接、全文状态标记
+3. **论文详情** - 架构、公式、代码（基于全文）
+4. **改进方向建议** - 可行动的优化方向
+5. **模型复现** - 完整 PyTorch 代码
 
 ## 上传到 GitHub
 
-### 首次发布
-
 ```bash
-cd researching-recsys-papers
-git init
+cd researching-recsys
 git add .
-git commit -m "Initial commit: researching-recsys-papers skill"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/researching-recsys-papers.git
-git push -u origin main
+git commit -m "Update: add full paper reading workflow"
+git push
 ```
-
-### 自动化发布（使用 GitHub Actions）
-
-推送时自动：
-1. 运行测试
-2. 更新版本号
-3. 创建 Release
 
 ## License
 

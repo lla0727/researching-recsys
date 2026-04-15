@@ -1,0 +1,79 @@
+{
+  "statistics": {
+    "heart_rate": 74.99999999999999,
+    "data_points": 1250,
+    "duration": 10,
+    "sampling_rate": 125,
+    "peak_count": 13
+  },
+  "premature_count": 2,
+  "st_segments": [
+    {
+      "start": 10,
+      "end": 17,
+      "deviation": -0.028099999999999993
+    },
+    {
+      "start": 110,
+      "end": 117,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 210,
+      "end": 217,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 310,
+      "end": 317,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 410,
+      "end": 417,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 510,
+      "end": 517,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 610,
+      "end": 617,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 710,
+      "end": 717,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 810,
+      "end": 817,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 910,
+      "end": 917,
+      "deviation": 0.008507142857142908
+    },
+    {
+      "start": 1010,
+      "end": 1017,
+      "deviation": -0.014049999999999998
+    },
+    {
+      "start": 1110,
+      "end": 1117,
+      "deviation": -0.014049999999999998
+    }
+  ],
+  "assessment": {
+    "overall_status": "需要关注",
+    "risk_level": "中",
+    "recommendations": [
+      "发现2个早搏，建议关注"
+    ]
+  }
+}

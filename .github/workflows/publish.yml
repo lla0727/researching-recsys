@@ -1,0 +1,70 @@
+name: Test and Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Test search script with arXiv
+        run: |
+          python scripts/search_papers.py "recommendation system" --start-year 2024 --end-year 2025 --max-per-source 3
+
+      - name: Test export to JSON
+        run: |
+          python scripts/search_papers.py "recommendation" --start-year 2024 --end-year 2025 --max-per-source 3 --output test_results.json --format json
+
+      - name: Verify JSON output
+        run: |
+          python -c "import json; data = json.load(open('test_results.json')); assert len(data) > 0, 'No papers found'; print(f'Found {len(data)} papers')"
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.json
+          retention-days: 7
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(date +'%Y.%m.%d')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            SKILL.md
+            README.md
+            scripts/search_papers.py
+            references/*.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

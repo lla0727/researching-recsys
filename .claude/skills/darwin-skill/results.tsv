@@ -1,0 +1,6 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-04-15T20:58	baseline	academic-search	-	79	baseline	-	初始评估	dry_run
+2026-04-15T20:58	baseline	creative-content-generator	-	56	baseline	-	初始评估	dry_run
+2026-04-15T20:58	baseline	ecg-analyzer	-	56	baseline	-	初始评估	dry_run
+2026-04-15T20:58	baseline	qiuzhi-skill-creator	-	82	baseline	-	初始评估	dry_run
+2026-04-15T20:58	baseline	researching-recsys-papers	-	81	baseline	-	初始评估	dry_run
